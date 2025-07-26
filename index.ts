@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 /**
- * Sea-lion MCP Server Entry Point
+ * Sea-lionMCP Server Entry Point
  * 
- * This file serves as the main entry point for the Sea-lion MCP server.
+ * This file serves as the main entry point for the Sea-lionMCP server.
  * It sets up the server and starts listening for MCP protocol messages.
  */
 
@@ -12,14 +12,14 @@ import { logger } from './src/utils/logger.js';
 
 async function main() {
   try {
-    logger.info('Starting Sea-lion MCP Server...');
+    logger.info('Starting Sea-lionMCP Server...');
     
     const server = new SeaLionMCPServer();
     await server.start();
     
-    logger.info('Sea-lion MCP Server started successfully');
+    logger.info('Sea-lionMCP Server started successfully');
   } catch (error) {
-    logger.error('Failed to start Sea-lion MCP Server:', error);
+    logger.error('Failed to start Sea-lionMCP Server:', error);
     process.exit(1);
   }
 }

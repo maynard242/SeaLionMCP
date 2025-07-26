@@ -1,5 +1,5 @@
 /**
- * Type definitions for the Sea-lion MCP server
+ * Type definitions for the Sea-lionMCP server
  */
 /**
  * Available Sea-lion models

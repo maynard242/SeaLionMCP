@@ -1,5 +1,5 @@
 /**
- * Simple logger utility for the Sea-lion MCP server
+ * Simple logger utility for the Sea-lionMCP server
  *
  * Provides structured logging with different levels for debugging and monitoring.
  */

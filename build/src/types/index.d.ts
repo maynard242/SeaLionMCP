@@ -1,5 +1,5 @@
 /**
- * Type definitions for the Sea-lion MCP server
+ * Type definitions for the Sea-lionMCP server
  */
 import { z } from 'zod';
 /**

@@ -13,10 +13,10 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "SeaLion MCP Server"
+args = "Sea-lionMCP"
 
 [[workflows.workflow]]
-name = "SeaLion MCP Server"
+name = "Sea-lionMCP"
 author = "agent"
 
 [[workflows.workflow.tasks]]

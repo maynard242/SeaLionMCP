@@ -1,5 +1,5 @@
 /**
- * Sea-lion MCP Server Implementation
+ * Sea-lionMCP Server Implementation
  * 
  * This class implements the main MCP server functionality for Sea-lion APIs.
  * It provides tools for text generation, translation, and cultural analysis
@@ -34,9 +34,9 @@ export class SeaLionMCPServer {
     // Initialize the MCP server with metadata
     this.server = new Server(
       {
-        name: 'sealion-mcp-server',
+        name: 'sea-lionmcp',
         version: '1.0.0',
-        description: 'MCP server providing access to Sea-lion Southeast Asian language models'
+        description: 'Sea-lionMCP: MCP server providing access to Sea-lion Southeast Asian language models'
       },
       {
         capabilities: {
@@ -292,7 +292,7 @@ export class SeaLionMCPServer {
       // Connect the server to the transport
       await this.server.connect(transport);
       
-      logger.info('Sea-lion MCP Server is running and ready to accept connections');
+      logger.info('Sea-lionMCP Server is running and ready to accept connections');
     } catch (error) {
       logger.error('Failed to start server:', error);
       throw error;
