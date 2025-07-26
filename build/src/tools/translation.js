@@ -14,13 +14,19 @@ const SupportedLanguages = [
 ];
 // Input schema for translation tool
 const TranslationSchema = z.object({
-    text: z.string().min(1, 'Text to translate cannot be empty'),
-    source_language: z.enum(SupportedLanguages),
-    target_language: z.enum(SupportedLanguages),
-    model: z.enum(['v3', 'v3.5']).default('v3.5'),
+    text: z.string().min(1, 'Text to translate cannot be empty').max(5000, 'Text too long for translation'),
+    source_language: z.enum(SupportedLanguages, {
+        errorMap: () => ({ message: `Source language must be one of: ${SupportedLanguages.join(', ')}` })
+    }),
+    target_language: z.enum(SupportedLanguages, {
+        errorMap: () => ({ message: `Target language must be one of: ${SupportedLanguages.join(', ')}` })
+    }),
+    model: z.enum(['v3', 'v3.5'], {
+        errorMap: () => ({ message: 'Model must be either v3 or v3.5' })
+    }).default('v3.5'),
     preserve_cultural_context: z.boolean().default(true).describe('Maintain cultural nuances in translation'),
     formal_register: z.boolean().default(false).describe('Use formal language register')
-});
+}).strict();
 /**
  * Handle translation requests
  */

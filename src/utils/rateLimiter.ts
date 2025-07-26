@@ -36,7 +36,17 @@ export class RateLimiter {
       return true;
     }
     
+    // Rate limit exceeded
     return false;
+  }
+
+  /**
+   * Check if a request would be allowed without consuming it
+   */
+  wouldAllowRequest(): boolean {
+    const now = Date.now();
+    this.cleanupOldRequests(now);
+    return this.requests.length < this.maxRequests;
   }
 
   /**

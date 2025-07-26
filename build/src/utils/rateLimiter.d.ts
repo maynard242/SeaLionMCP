@@ -14,6 +14,10 @@ export declare class RateLimiter {
      */
     allowRequest(): boolean;
     /**
+     * Check if a request would be allowed without consuming it
+     */
+    wouldAllowRequest(): boolean;
+    /**
      * Remove requests older than the time window
      */
     private cleanupOldRequests;

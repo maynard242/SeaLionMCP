@@ -12,13 +12,15 @@ import { logger } from '../utils/logger.js';
 
 // Input schema for text generation tool
 const TextGenerationSchema = z.object({
-  prompt: z.string().min(1, 'Prompt cannot be empty'),
-  model: z.enum(['v3', 'v3.5']).default('v3.5'),
-  max_tokens: z.number().min(1).max(4096).default(512),
-  temperature: z.number().min(0).max(2).default(0.7),
+  prompt: z.string().min(1, 'Prompt cannot be empty').max(10000, 'Prompt too long'),
+  model: z.enum(['v3', 'v3.5'], { 
+    errorMap: () => ({ message: 'Model must be either v3 or v3.5' })
+  }).default('v3.5'),
+  max_tokens: z.number().int().min(1, 'Max tokens must be at least 1').max(4096, 'Max tokens cannot exceed 4096').default(512),
+  temperature: z.number().min(0, 'Temperature must be at least 0').max(2, 'Temperature cannot exceed 2').default(0.7),
   thinking_mode: z.boolean().default(true).describe('Enable reasoning mode for v3.5 models'),
-  system_prompt: z.string().optional().describe('Optional system prompt for context')
-});
+  system_prompt: z.string().max(5000, 'System prompt too long').optional().describe('Optional system prompt for context')
+}).strict();
 
 type TextGenerationArgs = z.infer<typeof TextGenerationSchema>;
 

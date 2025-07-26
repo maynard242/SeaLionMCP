@@ -8,6 +8,15 @@ This is a Model Context Protocol (MCP) server implementation that provides acces
 
 Preferred communication style: Simple, everyday language.
 
+## Recent Changes (July 26, 2025)
+
+✓ Completed comprehensive security testing and vulnerability remediation
+✓ Enhanced input validation with strict Zod schemas and proper error messages
+✓ Implemented input/output sanitization to prevent XSS and injection attacks
+✓ Added JSON Schema conversion for proper MCP protocol compliance
+✓ Created security assessment documentation and testing framework
+✓ Validated MCP server functionality with proper JSON-RPC 2.0 responses
+
 ## System Architecture
 
 The system follows a modular, service-oriented architecture built on TypeScript and Node.js:

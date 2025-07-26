@@ -20,6 +20,22 @@ export declare class SeaLionMCPServer {
      */
     private setupHandlers;
     /**
+     * Sanitize input to prevent injection attacks
+     */
+    private sanitizeInput;
+    /**
+     * Sanitize output to prevent information leaks
+     */
+    private sanitizeOutput;
+    /**
+     * Convert Zod schema to JSON Schema for MCP compatibility
+     */
+    private convertZodToJsonSchema;
+    /**
+     * Convert individual Zod field to JSON Schema
+     */
+    private zodFieldToJsonSchema;
+    /**
      * Start the MCP server
      */
     start(): Promise<void>;

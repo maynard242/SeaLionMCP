@@ -26,7 +26,16 @@ export class RateLimiter {
             this.requests.push({ timestamp: now });
             return true;
         }
+        // Rate limit exceeded
         return false;
+    }
+    /**
+     * Check if a request would be allowed without consuming it
+     */
+    wouldAllowRequest() {
+        const now = Date.now();
+        this.cleanupOldRequests(now);
+        return this.requests.length < this.maxRequests;
     }
     /**
      * Remove requests older than the time window

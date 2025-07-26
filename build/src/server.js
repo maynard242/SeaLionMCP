@@ -61,7 +61,7 @@ export class SeaLionMCPServer {
             const toolList = Array.from(this.tools.values()).map(tool => ({
                 name: tool.name,
                 description: tool.description,
-                inputSchema: tool.inputSchema
+                inputSchema: this.convertZodToJsonSchema(tool.inputSchema)
             }));
             logger.debug('Listing tools:', toolList.map(t => t.name));
             return { tools: toolList };
@@ -70,26 +70,34 @@ export class SeaLionMCPServer {
         this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
             const { name, arguments: args } = request.params;
             logger.info(`Executing tool: ${name}`);
-            // Check rate limiting
+            // Check rate limiting first
             if (!this.rateLimiter.allowRequest()) {
                 throw new McpError(ErrorCode.InternalError, 'Rate limit exceeded. Please wait before making another request.');
             }
-            // Find the requested tool
+            // Validate tool name exists
             const tool = this.tools.get(name);
             if (!tool) {
                 throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${name}`);
             }
+            // Validate arguments are provided
+            if (!args || typeof args !== 'object') {
+                throw new McpError(ErrorCode.InvalidParams, 'Tool arguments are required and must be an object');
+            }
             try {
-                // Validate input arguments
+                // Validate input arguments with schema
                 const validatedArgs = tool.inputSchema.parse(args);
-                // Execute the tool
-                const result = await tool.handler(validatedArgs, this.sealionClient);
+                // Sanitize input to prevent injection attacks
+                const sanitizedArgs = this.sanitizeInput(validatedArgs);
+                // Execute the tool with sanitized input
+                const result = await tool.handler(sanitizedArgs, this.sealionClient);
+                // Sanitize output to prevent information leaks
+                const sanitizedResult = this.sanitizeOutput(result);
                 logger.info(`Tool ${name} executed successfully`);
                 return {
                     content: [
                         {
                             type: 'text',
-                            text: typeof result === 'string' ? result : JSON.stringify(result, null, 2)
+                            text: typeof sanitizedResult === 'string' ? sanitizedResult : JSON.stringify(sanitizedResult, null, 2)
                         }
                     ]
                 };
@@ -97,7 +105,7 @@ export class SeaLionMCPServer {
             catch (error) {
                 logger.error(`Error executing tool ${name}:`, error);
                 if (error instanceof z.ZodError) {
-                    throw new McpError(ErrorCode.InvalidParams, `Invalid parameters: ${error.errors.map(e => e.message).join(', ')}`);
+                    throw new McpError(ErrorCode.InvalidParams, `Invalid parameters: ${error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')}`);
                 }
                 if (error instanceof McpError) {
                     throw error;
@@ -105,6 +113,110 @@ export class SeaLionMCPServer {
                 throw new McpError(ErrorCode.InternalError, `Tool execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
             }
         });
+    }
+    /**
+     * Sanitize input to prevent injection attacks
+     */
+    sanitizeInput(input) {
+        if (typeof input === 'string') {
+            // Remove potentially dangerous characters and scripts
+            return input
+                .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+                .replace(/javascript:/gi, '')
+                .replace(/on\w+\s*=/gi, '')
+                .replace(/['"]/g, '')
+                .trim();
+        }
+        if (Array.isArray(input)) {
+            return input.map(item => this.sanitizeInput(item));
+        }
+        if (input && typeof input === 'object') {
+            const sanitized = {};
+            for (const [key, value] of Object.entries(input)) {
+                sanitized[key] = this.sanitizeInput(value);
+            }
+            return sanitized;
+        }
+        return input;
+    }
+    /**
+     * Sanitize output to prevent information leaks
+     */
+    sanitizeOutput(output) {
+        if (typeof output === 'string') {
+            // Remove potential sensitive information patterns
+            return output
+                .replace(/SEALION_API_KEY|API_KEY/gi, '[REDACTED]')
+                .replace(/sk-[a-zA-Z0-9]{32,}/g, '[REDACTED]')
+                .replace(/Bearer\s+[a-zA-Z0-9_-]+/gi, 'Bearer [REDACTED]')
+                .replace(/password[:\s=]+[^\s]+/gi, 'password: [REDACTED]');
+        }
+        return output;
+    }
+    /**
+     * Convert Zod schema to JSON Schema for MCP compatibility
+     */
+    convertZodToJsonSchema(zodSchema) {
+        // Basic conversion for common Zod types to JSON Schema
+        // This is a simplified implementation for the main types we use
+        try {
+            // Get the shape of the schema if it's an object
+            if (zodSchema instanceof z.ZodObject) {
+                const shape = zodSchema.shape;
+                const properties = {};
+                const required = [];
+                for (const [key, value] of Object.entries(shape)) {
+                    const fieldSchema = value;
+                    properties[key] = this.zodFieldToJsonSchema(fieldSchema);
+                    // Check if field is required (not optional)
+                    if (!(fieldSchema instanceof z.ZodOptional) && !(fieldSchema instanceof z.ZodDefault)) {
+                        required.push(key);
+                    }
+                }
+                return {
+                    type: 'object',
+                    properties,
+                    required: required.length > 0 ? required : undefined,
+                    additionalProperties: false
+                };
+            }
+            return { type: 'object' };
+        }
+        catch (error) {
+            logger.warn('Failed to convert Zod schema to JSON Schema:', error);
+            return { type: 'object' };
+        }
+    }
+    /**
+     * Convert individual Zod field to JSON Schema
+     */
+    zodFieldToJsonSchema(field) {
+        if (field instanceof z.ZodString) {
+            return { type: 'string' };
+        }
+        else if (field instanceof z.ZodNumber) {
+            return { type: 'number' };
+        }
+        else if (field instanceof z.ZodBoolean) {
+            return { type: 'boolean' };
+        }
+        else if (field instanceof z.ZodEnum) {
+            return {
+                type: 'string',
+                enum: field.options
+            };
+        }
+        else if (field instanceof z.ZodOptional) {
+            return this.zodFieldToJsonSchema(field.unwrap());
+        }
+        else if (field instanceof z.ZodDefault) {
+            const inner = this.zodFieldToJsonSchema(field.removeDefault());
+            return {
+                ...inner,
+                default: field._def.defaultValue()
+            };
+        }
+        return { type: 'string' }; // Fallback
     }
     /**
      * Start the MCP server

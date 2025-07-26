@@ -24,13 +24,21 @@ const Countries = [
 ];
 // Input schema for cultural analysis tool
 const CulturalAnalysisSchema = z.object({
-    content: z.string().min(1, 'Content for analysis cannot be empty'),
-    analysis_type: z.enum(AnalysisTypes).default('cultural_context'),
-    target_country: z.enum(Countries).optional().describe('Specific Southeast Asian country for focused analysis'),
-    model: z.enum(['v3', 'v3.5']).default('v3.5'),
+    content: z.string().min(1, 'Content for analysis cannot be empty').max(5000, 'Content too long for analysis'),
+    analysis_type: z.enum(AnalysisTypes, {
+        errorMap: () => ({ message: `Analysis type must be one of: ${AnalysisTypes.join(', ')}` })
+    }).default('cultural_context'),
+    target_country: z.enum(Countries, {
+        errorMap: () => ({ message: `Target country must be one of: ${Countries.join(', ')}` })
+    }).optional().describe('Specific Southeast Asian country for focused analysis'),
+    model: z.enum(['v3', 'v3.5'], {
+        errorMap: () => ({ message: 'Model must be either v3 or v3.5' })
+    }).default('v3.5'),
     include_recommendations: z.boolean().default(true).describe('Include actionable recommendations'),
-    detail_level: z.enum(['brief', 'detailed', 'comprehensive']).default('detailed')
-});
+    detail_level: z.enum(['brief', 'detailed', 'comprehensive'], {
+        errorMap: () => ({ message: 'Detail level must be brief, detailed, or comprehensive' })
+    }).default('detailed')
+}).strict();
 /**
  * Handle cultural analysis requests
  */
