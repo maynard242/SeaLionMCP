@@ -1,8 +1,8 @@
-# Sea-lionMCP
+# sea-lionMCP
 
 ## Overview
 
-Sea-lionMCP is a Model Context Protocol (MCP) server implementation that provides access to Sea-lion Southeast Asian language models. The server acts as a bridge between MCP-compatible clients and the Sea-lion API, offering specialized tools for text generation, translation, and cultural analysis with a focus on Southeast Asian languages and cultures.
+sea-lionMCP is a Model Context Protocol (MCP) server implementation that provides access to Sea-lion Southeast Asian language models. The server acts as a bridge between MCP-compatible clients and the Sea-lion API, offering specialized tools for text generation, translation, and cultural analysis with a focus on Southeast Asian languages and cultures.
 
 ## User Preferences
 
@@ -16,7 +16,7 @@ Preferred communication style: Simple, everyday language.
 ✓ Added JSON Schema conversion for proper MCP protocol compliance
 ✓ Created security assessment documentation and testing framework
 ✓ Validated MCP server functionality with proper JSON-RPC 2.0 responses
-✓ Renamed repository to "Sea-lionMCP" with updated branding throughout
+✓ Renamed repository to "sea-lionMCP" with updated branding throughout
 
 ## System Architecture
 

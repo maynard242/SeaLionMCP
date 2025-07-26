@@ -1,5 +1,5 @@
 /**
- * Sea-lionMCP Server Implementation
+ * sea-lionMCP Server Implementation
  *
  * This class implements the main MCP server functionality for Sea-lion APIs.
  * It provides tools for text generation, translation, and cultural analysis
